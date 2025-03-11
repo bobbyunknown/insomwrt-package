@@ -2,5 +2,4 @@ bobbyunknown/luci-app-insomclash
 bobbyunknown/luci-app-syscontrol
 bobbyunknown/luci-app-tinyfm
 bobbyunknown/luci-app-ipinfo
-bobbyunknown/Ngrok-openwrt
 bobbyunknown/OpenClash-lite

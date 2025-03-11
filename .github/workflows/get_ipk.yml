@@ -28,6 +28,8 @@ jobs:
         
       - name: Update package branch
         run: |
+          mkdir -p package-repo/aarch64_generic
+          
           cp -r main-repo/aarch64_generic/* package-repo/aarch64_generic/
           
           cd package-repo
