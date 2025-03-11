@@ -26,19 +26,27 @@ jobs:
           for IPK in *.ipk; do
             [ -f "$IPK" ] || continue
             
-            tar -xzOf "$IPK" ./control.tar.gz | tar -xzOf - ./control >> Packages
+            echo "Processing: $IPK"
             
-            # Tambah informasi file
+            if ! tar -xzOf "$IPK" ./control.tar.gz | tar -xzOf - ./control >> Packages; then
+              echo "Error processing $IPK, skipping..."
+              continue
+            fi
+            
             echo "Filename: $IPK" >> Packages
-            echo "Size: $(stat -c %s $IPK)" >> Packages
-            echo "MD5Sum: $(md5sum $IPK | cut -d' ' -f1)" >> Packages
-            echo "SHA256sum: $(sha256sum $IPK | cut -d' ' -f1)" >> Packages
+            echo "Size: $(stat -c %s "$IPK")" >> Packages
+            echo "MD5Sum: $(md5sum "$IPK" | cut -d' ' -f1)" >> Packages
+            echo "SHA256sum: $(sha256sum "$IPK" | cut -d' ' -f1)" >> Packages
             echo "" >> Packages
           done
           
-          gzip -k -f Packages
-          
-          cp Packages Packages.manifest
+          if [ -s Packages ]; then
+            gzip -k -f Packages
+            cp Packages Packages.manifest
+          else
+            echo "No valid packages found!"
+            exit 1
+          fi
 
       - name: Commit dan Push
         run: |
