@@ -13,6 +13,9 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
@@ -31,20 +34,63 @@ jobs:
           mkdir -p _site/aarch64_generic
           cp -r package-branch/aarch64_generic/* _site/aarch64_generic/
           
-          PACKAGE_LIST=""
+          # Generate index.html directly
+          cat > _site/index.html << 'EOL'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>InsomWrt Package Repository</title>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <style>
+                  body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }
+                  .container { max-width: 800px; margin: 0 auto; }
+                  table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                  th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+                  th { background-color: #f5f5f5; }
+                  pre { background: #f5f5f5; padding: 10px; border-radius: 4px; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>InsomWrt Package Repository</h1>
+                  
+                  <h2>🔧 Cara Menambahkan Feed</h2>
+                  <pre>src/gz insomwrt_aarch64 https://pkg.insomwrt.my.id/aarch64_generic</pre>
+                  <p>Tambahkan baris diatas ke /etc/opkg/customfeeds.conf</p>
+
+                  <h2>📦 Daftar Package</h2>
+                  <table>
+                      <tr>
+                          <th>Package</th>
+                          <th>Version</th>
+                          <th>Size</th>
+                      </tr>
+          EOL
+          
+          # Add package list
           cd package-branch/aarch64_generic
           for file in *.ipk; do
             if [ -f "$file" ]; then
               name=$(echo "$file" | sed -E 's/_[0-9].*//')
               version=$(echo "$file" | grep -oP '(?<=_)[0-9][^_]*(?=_)' || echo "unknown")
               size=$(ls -lh "$file" | awk '{print $5}')
-              PACKAGE_LIST="$PACKAGE_LIST<tr><td>$name</td><td>$version</td><td>$size</td></tr>"
+              echo "<tr><td>$name</td><td>$version</td><td>$size</td></tr>" >> ../../_site/index.html
             fi
           done
           cd ../..
           
-          cp index.html _site/
-          sed -i "s|<!-- PACKAGE_LIST -->|$PACKAGE_LIST|" _site/index.html
+          # Close HTML
+          cat >> _site/index.html << 'EOL'
+                  </table>
+                  <footer style="margin-top: 40px; text-align: center; color: #666;">
+                      <p>© 2024 InsomWrt Package Repository</p>
+                      <p><a href="https://github.com/bobbyunknown/insomwrt-package">GitHub Repository</a></p>
+                  </footer>
+              </div>
+          </body>
+          </html>
+          EOL
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
