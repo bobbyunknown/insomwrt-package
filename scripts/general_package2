@@ -1,0 +1,49 @@
+#!/bin/bash
+
+TEMP_DIR="temp_packages"
+CHECK_VERSION_DIR="package_version"
+TARGET_DIR="aarch64_generic"
+
+if [ ! -z "$GITHUB_TOKEN" ]; then
+    AUTH_HEADER="Authorization: token $GITHUB_TOKEN"
+else
+    AUTH_HEADER=""
+fi
+
+mkdir -p "$TEMP_DIR"
+mkdir -p "$TARGET_DIR"
+mkdir -p "ipk_version"
+
+LATEST_COMMIT=$(curl -s -H "$AUTH_HEADER" https://api.github.com/repos/gSpotx2f/packages-openwrt/commits/master | jq -r '.sha')
+
+if [ -f "ipk_version/gspot_version.txt" ]; then
+    OLD_COMMIT=$(cat "ipk_version/gspot_version.txt")
+else
+    OLD_COMMIT=""
+fi
+
+if [ "$LATEST_COMMIT" != "$OLD_COMMIT" ]; then
+    echo "Memperbarui packages dari gSpotx2f"
+    BASE_URL="https://raw.githubusercontent.com/gSpotx2f/packages-openwrt/master/current"
+    
+    FILES=$(curl -s -H "$AUTH_HEADER" https://api.github.com/repos/gSpotx2f/packages-openwrt/contents/current | jq -r '.[] | select(.name | endswith(".ipk")) | .name')
+    
+    for file in $FILES; do
+        echo "Downloading: $file"
+        curl -s -L -H "$AUTH_HEADER" -o "$TARGET_DIR/$file" "$BASE_URL/$file"
+    done
+    
+    if ls "$TARGET_DIR"/*.ipk 1> /dev/null 2>&1; then
+        echo "$LATEST_COMMIT" > "ipk_version/gspot_version.txt"
+        echo "Berhasil memperbarui packages"
+        echo "File yang berhasil ditambahkan:"
+        ls -l "$TARGET_DIR"
+    else
+        echo "Gagal mengunduh file IPK"
+    fi
+else
+    echo "Packages sudah versi terbaru"
+fi
+
+rm -rf "$TEMP_DIR"
+
