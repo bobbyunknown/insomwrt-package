@@ -15,8 +15,8 @@ while IFS= read -r repo || [ -n "$repo" ]; do
     REPO_NAME=$(echo "$repo" | cut -d'/' -f2)
     
     CURRENT_VERSION=""
-    if [ -f "../$CHECK_VERSION_DIR/aarch64_generic/${REPO_NAME}_version.txt" ]; then
-        CURRENT_VERSION=$(cat "../$CHECK_VERSION_DIR/aarch64_generic/${REPO_NAME}_version.txt")
+    if [ -f "../$CHECK_VERSION_DIR/ipk_version/${REPO_NAME}_version.txt" ]; then
+        CURRENT_VERSION=$(cat "../$CHECK_VERSION_DIR/ipk_version/${REPO_NAME}_version.txt")
     fi
     
     LATEST_RELEASE=$(curl -s "https://api.github.com/repos/$repo/releases/latest")
@@ -30,8 +30,9 @@ while IFS= read -r repo || [ -n "$repo" ]; do
         done
         
         mkdir -p "../aarch64_generic"
+        mkdir -p "../ipk_version"
         mv *.ipk "../aarch64_generic/"
-        echo "$VERSION" > "../aarch64_generic/${REPO_NAME}_version.txt"
+        echo "$VERSION" > "../ipk_version/${REPO_NAME}_version.txt"
     else
         echo "$REPO_NAME sudah versi terbaru ($VERSION)"
     fi

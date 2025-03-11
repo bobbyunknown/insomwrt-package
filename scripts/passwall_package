@@ -2,7 +2,6 @@
 
 REPO_FILE="../config_passwall.txt"
 TEMP_DIR="temp_packages"
-
 CHECK_VERSION_DIR="package_version"
 
 git clone --quiet --branch package --single-branch --depth 1 https://github.com/bobbyunknown/insomwrt-package.git "$CHECK_VERSION_DIR"
@@ -17,29 +16,43 @@ while IFS= read -r repo || [ -n "$repo" ]; do
     
     LATEST_RELEASE=$(curl -s "https://api.github.com/repos/$repo/releases/latest")
     VERSION=$(echo $LATEST_RELEASE | jq -r '.tag_name')
+    
+    if [ -z "$LATEST_RELEASE" ] || [ "$VERSION" = "null" ]; then
+        echo "Error getting release info from GitHub API"
+        continue
+    }
+    
     CURRENT_VERSION=""
-    if [ -f "../$CHECK_VERSION_DIR/aarch64_generic/luci-app-passwall_version.txt" ]; then
-        CURRENT_VERSION=$(cat "../$CHECK_VERSION_DIR/aarch64_generic/luci-app-passwall_version.txt")
+    if [ -f "../$CHECK_VERSION_DIR/ipk_version/luci-app-passwall_version.txt" ]; then
+        CURRENT_VERSION=$(cat "../$CHECK_VERSION_DIR/ipk_version/luci-app-passwall_version.txt")
     fi
     
-    if [ "$VERSION" != "$CURRENT_VERSION" ]; then
+    if [ -z "$CURRENT_VERSION" ] || [ "$VERSION" != "$CURRENT_VERSION" ]; then
         echo "Memperbarui PassWall ke versi $VERSION"
         
         MAIN_IPK=$(echo $LATEST_RELEASE | jq -r '.assets[] | select(.name | contains("luci-24.10_luci-app-passwall_")) | .browser_download_url')
         if [ ! -z "$MAIN_IPK" ]; then
+            echo "Downloading main IPK from: $MAIN_IPK"
             wget -q "$MAIN_IPK"
         fi
     
         ZIP_URL=$(echo $LATEST_RELEASE | jq -r '.assets[] | select(.name | endswith("aarch64_generic.zip")) | .browser_download_url')
         if [ ! -z "$ZIP_URL" ]; then
+            echo "Downloading ZIP from: $ZIP_URL"
             wget -q "$ZIP_URL" -O temp.zip
             unzip -j temp.zip "*.ipk"
             rm temp.zip
         fi
         
-        mkdir -p "../aarch64_generic"
-        mv *.ipk "../aarch64_generic/"
-        echo "$VERSION" > "../aarch64_generic/luci-app-passwall_version.txt"
+        if ls *.ipk 1> /dev/null 2>&1; then
+            mkdir -p "../aarch64_generic"
+            mkdir -p "../ipk_version"
+            mv *.ipk "../aarch64_generic/"
+            echo "$VERSION" > "../ipk_version/luci-app-passwall_version.txt"
+            echo "Berhasil memperbarui PassWall"
+        else
+            echo "Tidak ada file IPK yang didownload"
+        fi
     else
         echo "PassWall sudah versi terbaru ($VERSION)"
     fi
