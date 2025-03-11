@@ -1,0 +1,55 @@
+#!/bin/bash
+
+TEMP_DIR="temp_packages"
+CHECK_VERSION_DIR="package_version"
+TARGET_DIR="aarch64_generic"
+
+if [ ! -z "$GITHUB_TOKEN" ]; then
+    AUTH_HEADER="Authorization: token $GITHUB_TOKEN"
+else
+    AUTH_HEADER=""
+fi
+
+mkdir -p "$TEMP_DIR"
+mkdir -p "$TARGET_DIR"
+mkdir -p "ipk_version"
+
+VERSION=$(curl -s -H "$AUTH_HEADER" https://api.github.com/repos/bobbyunknown/Ngrok-openwrt/releases/latest | grep -oP '"tag_name": "\K[^"]*')
+
+if [ -f "ipk_version/ngrok_version.txt" ]; then
+    OLD_VERSION=$(cat "ipk_version/ngrok_version.txt")
+else
+    OLD_VERSION=""
+fi
+
+if [ "$VERSION" != "$OLD_VERSION" ]; then
+    echo "Memperbarui Ngrok ke versi $VERSION"
+    
+    RELEASE_URL="https://api.github.com/repos/bobbyunknown/Ngrok-openwrt/releases/latest"
+    ASSETS=$(curl -s -H "$AUTH_HEADER" "$RELEASE_URL" | jq -r '.assets[].browser_download_url')
+    
+    for url in $ASSETS; do
+        if [[ $url == *"luci-app-ngrok"* ]]; then
+            echo "Downloading LuCI app from: $url"
+            curl -s -L -H "$AUTH_HEADER" -o "$TARGET_DIR/$(basename $url)" "$url"
+        fi
+        
+        if [[ $url == *"ngrok-core"* ]] && [[ $url == *"aarch64"* ]]; then
+            echo "Downloading Ngrok core from: $url"
+            curl -s -L -H "$AUTH_HEADER" -o "$TARGET_DIR/$(basename $url)" "$url"
+        fi
+    done
+    
+    if ls "$TARGET_DIR"/*.ipk 1> /dev/null 2>&1; then
+        echo "$VERSION" > "ipk_version/ngrok_version.txt"
+        echo "Berhasil memperbarui Ngrok"
+        echo "File yang berhasil ditambahkan:"
+        ls -l "$TARGET_DIR"
+    else
+        echo "Gagal mengunduh file IPK"
+    fi
+else
+    echo "Ngrok sudah versi terbaru ($VERSION)"
+fi
+
+rm -rf "$TEMP_DIR"
