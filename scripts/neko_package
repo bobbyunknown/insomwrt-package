@@ -1,0 +1,38 @@
+#!/bin/bash
+
+TEMP_DIR="temp_packages"
+TARGET_DIR="aarch64_generic"
+
+if [ ! -z "$GITHUB_TOKEN" ]; then
+    AUTH_HEADER="Authorization: token $GITHUB_TOKEN"
+else
+    AUTH_HEADER=""
+fi
+
+mkdir -p "$TEMP_DIR"
+mkdir -p "$TARGET_DIR"
+mkdir -p "ipk_version"
+
+PACKAGES=(
+    "https://github.com/nosignals/openwrt-neko/releases/download/neko-dev/luci-app-neko_1.2.5-beta_dev_all.ipk"
+    "https://github.com/nosignals/openwrt-neko/releases/download/core_1.19.1_1.10.7/mihomo_1.19.1-2_aarch64_generic.ipk"
+    "https://github.com/nosignals/openwrt-neko/releases/download/core_1.19.1_1.10.7/sing-box_1.10.7-1_aarch64_generic.ipk"
+)
+
+echo "Memperbarui package Neko"
+
+for url in "${PACKAGES[@]}"; do
+    filename=$(basename "$url")
+    echo "Downloading: $filename"
+    curl -s -L -H "$AUTH_HEADER" -o "$TARGET_DIR/$filename" "$url"
+done
+
+if ls "$TARGET_DIR"/*.ipk 1> /dev/null 2>&1; then
+    echo "Berhasil memperbarui package Neko"
+    echo "File yang berhasil ditambahkan:"
+    ls -l "$TARGET_DIR"
+else
+    echo "Gagal mengunduh file IPK"
+fi
+
+rm -rf "$TEMP_DIR"
