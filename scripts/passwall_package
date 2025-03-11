@@ -1,6 +1,5 @@
 #!/bin/bash
 
-REPO_FILE="../config_passwall.txt"
 TEMP_DIR="temp_packages"
 CHECK_VERSION_DIR="package_version"
 
@@ -15,67 +14,62 @@ git clone --quiet --branch package --single-branch --depth 1 https://github.com/
 mkdir -p "$TEMP_DIR"
 cd "$TEMP_DIR"
 
-while IFS= read -r repo || [ -n "$repo" ]; do
-    [[ $repo =~ ^#.*$ || -z $repo ]] && continue
+echo "Processing Passwall repository"
+
+RELEASES_URL="https://api.github.com/repos/xiaorouji/openwrt-passwall/releases/latest"
+
+if [ ! -z "$AUTH_HEADER" ]; then
+    LATEST_RELEASE=$(curl -s -H "$AUTH_HEADER" "$RELEASES_URL")
+else
+    LATEST_RELEASE=$(curl -s "$RELEASES_URL")
+fi
+
+VERSION=$(echo $LATEST_RELEASE | jq -r '.tag_name')
+
+echo "Debug - Latest Release Response:"
+echo "$LATEST_RELEASE" | jq '.'
+
+if [ -z "$LATEST_RELEASE" ] || [ "$VERSION" = "null" ]; then
+    echo "Error getting release info from GitHub API"
+    exit 1
+fi
+
+CURRENT_VERSION=""
+if [ -f "../$CHECK_VERSION_DIR/ipk_version/luci-app-passwall_version.txt" ]; then
+    CURRENT_VERSION=$(cat "../$CHECK_VERSION_DIR/ipk_version/luci-app-passwall_version.txt")
+fi
+
+if [ -z "$CURRENT_VERSION" ] || [ "$VERSION" != "$CURRENT_VERSION" ]; then
+    echo "Memperbarui PassWall ke versi $VERSION"
     
-    echo "Processing Passwall repository: $repo"
+    # Download semua file yang mengandung aarch64_generic
+    echo $LATEST_RELEASE | jq -r '.assets[].browser_download_url' | while read url; do
+        if [[ $url == *"aarch64_generic"* ]]; then
+            echo "Downloading: $url"
+            if [[ $url == *.zip ]]; then
+                wget -q "$url" -O temp.zip
+                unzip -j temp.zip "*.ipk"
+                rm temp.zip
+            else
+                wget -q "$url"
+            fi
+        fi
+    done
     
-    if [ ! -z "$AUTH_HEADER" ]; then
-        LATEST_RELEASE=$(curl -s -H "$AUTH_HEADER" "https://api.github.com/repos/$repo/releases/latest")
+    if ls *.ipk 1> /dev/null 2>&1; then
+        mkdir -p "../aarch64_generic"
+        mkdir -p "../ipk_version"
+        mv *.ipk "../aarch64_generic/"
+        echo "$VERSION" > "../ipk_version/luci-app-passwall_version.txt"
+        echo "Berhasil memperbarui PassWall"
+        echo "File yang berhasil ditambahkan:"
+        ls -l "../aarch64_generic/"
     else
-        LATEST_RELEASE=$(curl -s "https://api.github.com/repos/$repo/releases/latest")
+        echo "Tidak ada file IPK yang didownload"
     fi
-    
-    VERSION=$(echo $LATEST_RELEASE | jq -r '.tag_name')
-    
-    echo "Debug - Latest Release Response:"
-    echo "$LATEST_RELEASE" | jq '.'
-    
-    if [ -z "$LATEST_RELEASE" ] || [ "$VERSION" = "null" ]; then
-        echo "Error getting release info from GitHub API"
-        continue
-    fi
-    
-    CURRENT_VERSION=""
-    if [ -f "../$CHECK_VERSION_DIR/ipk_version/luci-app-passwall_version.txt" ]; then
-        CURRENT_VERSION=$(cat "../$CHECK_VERSION_DIR/ipk_version/luci-app-passwall_version.txt")
-    fi
-    
-    if [ -z "$CURRENT_VERSION" ] || [ "$VERSION" != "$CURRENT_VERSION" ]; then
-        echo "Memperbarui PassWall ke versi $VERSION"
-        
-        LUCI_ASSETS=$(echo $LATEST_RELEASE | jq -r '.assets[] | select(.name | contains("luci-24.10_luci-app-passwall_"))')
-        LUCI_URL=$(echo "$LUCI_ASSETS" | jq -r '.browser_download_url')
-        if [ ! -z "$LUCI_URL" ]; then
-            echo "Downloading LuCI app from: $LUCI_URL"
-            wget -q "$LUCI_URL"
-        fi
-        
-        ARCH_ASSETS=$(echo $LATEST_RELEASE | jq -r '.assets[] | select(.name | contains("aarch64_generic.zip"))')
-        ZIP_URL=$(echo "$ARCH_ASSETS" | jq -r '.browser_download_url')
-        if [ ! -z "$ZIP_URL" ]; then
-            echo "Downloading aarch64_generic package from: $ZIP_URL"
-            wget -q "$ZIP_URL" -O temp.zip
-            unzip -j temp.zip "*.ipk"
-            rm temp.zip
-        fi
-        
-        if ls *.ipk 1> /dev/null 2>&1; then
-            mkdir -p "../aarch64_generic"
-            mkdir -p "../ipk_version"
-            mv *.ipk "../aarch64_generic/"
-            echo "$VERSION" > "../ipk_version/luci-app-passwall_version.txt"
-            echo "Berhasil memperbarui PassWall"
-            echo "File yang berhasil ditambahkan:"
-            ls -l "../aarch64_generic/"
-        else
-            echo "Tidak ada file IPK yang didownload"
-        fi
-    else
-        echo "PassWall sudah versi terbaru ($VERSION)"
-    fi
-    
-done < "$REPO_FILE"
+else
+    echo "PassWall sudah versi terbaru ($VERSION)"
+fi
 
 cd ..
 rm -rf "$TEMP_DIR"
