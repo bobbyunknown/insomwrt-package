@@ -26,10 +26,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-            chmod +x scripts/passwall_package
-            chmod +x scripts/general_package
-            bash scripts/passwall_package
-            bash scripts/general_package
+            chmod +x scripts/*
+            for script in scripts/*_package; do
+              if [ -f "$script" ]; then
+                echo "Running $script..."
+                bash "$script"
+              fi
+            done
         
       - name: Update package branch
         run: |
