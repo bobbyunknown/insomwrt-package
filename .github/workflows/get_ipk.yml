@@ -19,6 +19,7 @@ jobs:
           mkdir -p aarch64_generic
           
       - name: Get package
+        working-directory: ./
         run: |
             chmod +x scripts/passwall_package
             chmod +x scripts/general_package
