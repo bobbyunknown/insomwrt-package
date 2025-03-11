@@ -20,7 +20,7 @@ while IFS= read -r repo || [ -n "$repo" ]; do
     if [ -z "$LATEST_RELEASE" ] || [ "$VERSION" = "null" ]; then
         echo "Error getting release info from GitHub API"
         continue
-    }
+    fi
     
     CURRENT_VERSION=""
     if [ -f "../$CHECK_VERSION_DIR/ipk_version/luci-app-passwall_version.txt" ]; then
