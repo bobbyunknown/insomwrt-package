@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Copyright BobbyUnknown 2025 | https://github.com/bobbyunknown
+
 REPO_FILE="../config.txt"
 TEMP_DIR="temp_packages"
 CHECK_VERSION_DIR="package_version"
