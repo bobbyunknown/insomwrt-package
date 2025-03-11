@@ -42,19 +42,19 @@ fi
 if [ -z "$CURRENT_VERSION" ] || [ "$VERSION" != "$CURRENT_VERSION" ]; then
     echo "Memperbarui PassWall ke versi $VERSION"
     
-    # Download semua file yang mengandung aarch64_generic
-    echo $LATEST_RELEASE | jq -r '.assets[].browser_download_url' | while read url; do
-        if [[ $url == *"aarch64_generic"* ]]; then
-            echo "Downloading: $url"
-            if [[ $url == *.zip ]]; then
-                wget -q "$url" -O temp.zip
-                unzip -j temp.zip "*.ipk"
-                rm temp.zip
-            else
-                wget -q "$url"
-            fi
-        fi
-    done
+    LUCI_URL=$(echo $LATEST_RELEASE | jq -r '.assets[] | select(.name | contains("luci-24.10_luci-app-passwall_")) | .browser_download_url')
+    if [ ! -z "$LUCI_URL" ]; then
+        echo "Downloading LuCI app from: $LUCI_URL"
+        wget -q "$LUCI_URL"
+    fi
+    
+    ZIP_URL=$(echo $LATEST_RELEASE | jq -r '.assets[] | select(.name | contains("passwall_packages_ipk_aarch64")) | .browser_download_url')
+    if [ ! -z "$ZIP_URL" ]; then
+        echo "Downloading package zip from: $ZIP_URL"
+        wget -q "$ZIP_URL" -O temp.zip
+        unzip -j temp.zip "*.ipk"
+        rm temp.zip
+    fi
     
     if ls *.ipk 1> /dev/null 2>&1; then
         mkdir -p "../aarch64_generic"
