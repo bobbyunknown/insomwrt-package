@@ -3,3 +3,11 @@ bobbyunknown/luci-app-syscontrol
 bobbyunknown/luci-app-tinyfm
 bobbyunknown/luci-app-ipinfo
 bobbyunknown/OpenClash-lite
+rtaserver/RakitanManager
+animegasan/luci-app-droidmodem
+animegasan/luci-app-speedtest
+animegasan/luci-app-alpha-config
+peditx/luci-theme-peditx
+animegasan/luci-app-dnsleaktest
+derisamedia/luci-theme-alpha
+rtaserver/RTA-Theme-OpenWrt
