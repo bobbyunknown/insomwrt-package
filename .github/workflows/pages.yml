@@ -1,0 +1,106 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        
+      - name: Checkout package branch
+        uses: actions/checkout@v4
+        with:
+          ref: package
+          path: package-branch
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Build site
+        run: |
+          mkdir -p _site
+          mkdir -p _site/aarch64_generic
+          cp -r package-branch/aarch64_generic/* _site/aarch64_generic/
+          
+          # Generate index.html
+          cat > _site/index.html << 'EOL'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <meta charset="UTF-8">
+              <title>InsomWrt Package Repository</title>
+              <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+          </head>
+          <body class="bg-gray-100">
+              <div class="container mx-auto px-4 py-8">
+                  <h1 class="text-4xl font-bold mb-8">InsomWrt Package Repository</h1>
+                  <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                      <h2 class="text-2xl font-semibold mb-4">🔧 Cara Menambahkan Feed</h2>
+                      <div class="bg-gray-100 p-4 rounded-md mb-4">
+                          <code class="text-sm">src/gz insomwrt_aarch64 https://pkg.insomwrt.my.id/aarch64_generic</code>
+                      </div>
+                      <p class="text-sm text-gray-600 mt-2">Tambahkan baris diatas ke /etc/opkg/customfeeds.conf</p>
+                  </div>
+                  
+                  <div class="bg-white rounded-lg shadow-md p-6">
+                      <h2 class="text-2xl font-semibold mb-4">📦 Available Packages</h2>
+                      <div class="overflow-x-auto">
+                          <table class="min-w-full">
+                              <thead>
+                                  <tr class="bg-gray-200">
+                                      <th class="px-4 py-2 text-left">Package</th>
+                                      <th class="px-4 py-2 text-left">Version</th>
+                                      <th class="px-4 py-2 text-left">Size</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+          EOL
+          
+          # Add package list
+          cd package-branch/aarch64_generic
+          for file in *.ipk; do
+            if [ -f "$file" ]; then
+              name=$(echo $file | sed 's/_[0-9].*$//')
+              version=$(echo $file | grep -oP '(?<=_)[0-9][^_]*(?=_)')
+              size=$(ls -lh "$file" | awk '{print $5}')
+              echo "<tr class=\"border-b hover:bg-gray-50\"><td class=\"px-4 py-2\">$name</td><td class=\"px-4 py-2\">$version</td><td class=\"px-4 py-2\">$size</td></tr>" >> ../../_site/index.html
+            fi
+          done
+          cd ../..
+          
+          # Close HTML
+          cat >> _site/index.html << 'EOL'
+                              </tbody>
+                          </table>
+                      </div>
+                  </div>
+                  
+                  <footer class="mt-8 text-center text-gray-600">
+                      <p>© 2024 InsomWrt Package Repository</p>
+                      <p class="mt-2">
+                          <a href="https://github.com/bobbyunknown/insomwrt-package" class="text-blue-600 hover:text-blue-800">GitHub Repository</a>
+                      </p>
+                  </footer>
+              </div>
+          </body>
+          </html>
+          EOL
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
