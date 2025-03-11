@@ -443,6 +443,22 @@ Size: 8755
 MD5Sum: 0d2e90f7f8c7d7ddfad2d814b225360f
 SHA256sum: ebf5213b98d9a03e5288eea0731d67d03b9e833f08abf341154bbf2f31d6084e
 
+Package: luci-app-modemband
+Version: 1.0.25-20240622
+Depends: libc, sms-tool, modemband
+Source: package/luci-app-modemband
+SourceName: luci-app-modemband
+Section: luci
+SourceDateEpoch: 1719054169
+Maintainer: OpenWrt LuCI community
+Architecture: all
+Installed-Size: 6645
+Description:  LuCI JS interface for the modemband. The package allows set LTE/5G bands for selected 4G/5G modems.
+Filename: luci-app-modemband_1.0.25-20240622_all.ipk
+Size: 7545
+MD5Sum: 4bf6789e25002e27dedc8524468baade
+SHA256sum: b8f7c3aa7b0ea3a31073f124677f8ee0f4a3ebe6aae27b06f7fd4e57de9bbc6d
+
 Package: luci-app-neko
 Version: 1.2.5-beta
 Depends: libc, kmod-tun, bash, curl, jq, mihomo, sing-box, php8, php8-mod-curl
