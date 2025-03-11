@@ -2,6 +2,10 @@
 
 REPO_FILE="../config.txt"
 TEMP_DIR="temp_packages"
+CHECK_VERSION_DIR="package_version"
+
+git clone --quiet --branch package --single-branch --depth 1 https://github.com/bobbyunknown/insomwrt-package.git "$CHECK_VERSION_DIR"
+
 mkdir -p "$TEMP_DIR"
 cd "$TEMP_DIR"
 
@@ -11,8 +15,8 @@ while IFS= read -r repo || [ -n "$repo" ]; do
     REPO_NAME=$(echo "$repo" | cut -d'/' -f2)
     
     CURRENT_VERSION=""
-    if [ -f "../aarch64_generic/${REPO_NAME}_version.txt" ]; then
-        CURRENT_VERSION=$(cat "../aarch64_generic/${REPO_NAME}_version.txt")
+    if [ -f "../$CHECK_VERSION_DIR/aarch64_generic/${REPO_NAME}_version.txt" ]; then
+        CURRENT_VERSION=$(cat "../$CHECK_VERSION_DIR/aarch64_generic/${REPO_NAME}_version.txt")
     fi
     
     LATEST_RELEASE=$(curl -s "https://api.github.com/repos/$repo/releases/latest")
@@ -28,8 +32,11 @@ while IFS= read -r repo || [ -n "$repo" ]; do
         mkdir -p "../aarch64_generic"
         mv *.ipk "../aarch64_generic/"
         echo "$VERSION" > "../aarch64_generic/${REPO_NAME}_version.txt"
+    else
+        echo "$REPO_NAME sudah versi terbaru ($VERSION)"
     fi
 done < "$REPO_FILE"
 
 cd ..
 rm -rf "$TEMP_DIR"
+rm -rf "$CHECK_VERSION_DIR"

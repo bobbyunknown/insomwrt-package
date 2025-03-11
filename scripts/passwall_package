@@ -3,6 +3,10 @@
 REPO_FILE="../config_passwall.txt"
 TEMP_DIR="temp_packages"
 
+CHECK_VERSION_DIR="package_version"
+
+git clone --quiet --branch package --single-branch --depth 1 https://github.com/bobbyunknown/insomwrt-package.git "$CHECK_VERSION_DIR"
+
 mkdir -p "$TEMP_DIR"
 cd "$TEMP_DIR"
 
@@ -14,8 +18,8 @@ while IFS= read -r repo || [ -n "$repo" ]; do
     LATEST_RELEASE=$(curl -s "https://api.github.com/repos/$repo/releases/latest")
     VERSION=$(echo $LATEST_RELEASE | jq -r '.tag_name')
     CURRENT_VERSION=""
-    if [ -f "../aarch64_generic/luci-app-passwall_version.txt" ]; then
-        CURRENT_VERSION=$(cat "../aarch64_generic/luci-app-passwall_version.txt")
+    if [ -f "../$CHECK_VERSION_DIR/aarch64_generic/luci-app-passwall_version.txt" ]; then
+        CURRENT_VERSION=$(cat "../$CHECK_VERSION_DIR/aarch64_generic/luci-app-passwall_version.txt")
     fi
     
     if [ "$VERSION" != "$CURRENT_VERSION" ]; then
@@ -44,3 +48,4 @@ done < "$REPO_FILE"
 
 cd ..
 rm -rf "$TEMP_DIR"
+rm -rf "$CHECK_VERSION_DIR"
