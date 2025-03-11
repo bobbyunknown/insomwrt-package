@@ -20,10 +20,15 @@ jobs:
         
       - name: Switch to package branch and commit
         run: |
-          git stash
+          mkdir -p /tmp/ipk_files
+          cp -r aarch64_generic/* /tmp/ipk_files/
           git fetch origin package
           git checkout package
-          git stash pop
+          
+          mkdir -p aarch64_generic
+          cp -r /tmp/ipk_files/* aarch64_generic/
+          
+          # Commit dan push
           git config --global user.email "${{ github.actor }}@users.noreply.github.com"
           git config --global user.name "${{ github.actor }}"
           git add -f aarch64_generic/
