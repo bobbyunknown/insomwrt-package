@@ -27,7 +27,7 @@ fi
 if [ "$VERSION" != "$OLD_VERSION" ]; then
     echo "Memperbarui PassWall ke versi $VERSION"
     
-    LUCI_URL="https://github.com/xiaorouji/openwrt-passwall/releases/download/${VERSION}/luci-24.10_luci-app-passwall_${VERSION}_all.ipk"
+    LUCI_URL="https://github.com/xiaorouji/openwrt-passwall/releases/download/${VERSION}/luci-24.10_luci-app-passwall_25.3.9-r1_all.ipk"
     curl -s -L -H "$AUTH_HEADER" -o "$TARGET_DIR/luci-app-passwall_${VERSION}_all.ipk" "$LUCI_URL"
     
     DEP_URL="https://github.com/xiaorouji/openwrt-passwall/releases/download/${VERSION}/passwall_packages_ipk_aarch64_generic.zip"
