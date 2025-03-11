@@ -23,6 +23,8 @@ jobs:
       
       - name: Get package
         working-directory: main-repo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
             chmod +x scripts/passwall_package
             chmod +x scripts/general_package

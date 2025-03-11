@@ -4,6 +4,12 @@ REPO_FILE="../config_passwall.txt"
 TEMP_DIR="temp_packages"
 CHECK_VERSION_DIR="package_version"
 
+if [ ! -z "$GITHUB_TOKEN" ]; then
+    AUTH_HEADER="Authorization: token $GITHUB_TOKEN"
+else
+    AUTH_HEADER=""
+fi
+
 git clone --quiet --branch package --single-branch --depth 1 https://github.com/bobbyunknown/insomwrt-package.git "$CHECK_VERSION_DIR"
 
 mkdir -p "$TEMP_DIR"
@@ -14,8 +20,16 @@ while IFS= read -r repo || [ -n "$repo" ]; do
     
     echo "Processing Passwall repository: $repo"
     
-    LATEST_RELEASE=$(curl -s "https://api.github.com/repos/$repo/releases/latest")
+    if [ ! -z "$AUTH_HEADER" ]; then
+        LATEST_RELEASE=$(curl -s -H "$AUTH_HEADER" "https://api.github.com/repos/$repo/releases/latest")
+    else
+        LATEST_RELEASE=$(curl -s "https://api.github.com/repos/$repo/releases/latest")
+    fi
+    
     VERSION=$(echo $LATEST_RELEASE | jq -r '.tag_name')
+    
+    echo "Debug - Latest Release Response:"
+    echo "$LATEST_RELEASE" | jq '.'
     
     if [ -z "$LATEST_RELEASE" ] || [ "$VERSION" = "null" ]; then
         echo "Error getting release info from GitHub API"
