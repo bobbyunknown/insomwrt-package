@@ -24,7 +24,7 @@ jobs:
       - name: Checkout main branch
         uses: actions/checkout@v4
         
-      - name: Checkout package branch to different directory
+      - name: Checkout package branch
         uses: actions/checkout@v4
         with:
           ref: package
@@ -32,6 +32,8 @@ jobs:
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
+        with:
+          enablement: true
       
       - name: Generate Package Index
         run: |
