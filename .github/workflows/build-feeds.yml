@@ -1,0 +1,60 @@
+# Copyright BobbyUnknown 2025 | https://github.com/bobbyunknown
+
+name: Build OpenWrt Feed
+
+on:
+  push:
+    branches:
+      - package
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: package
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Generate Package Index
+        run: |
+          cd aarch64_generic
+          
+          rm -f Packages Packages.gz Packages.manifest
+          
+          for IPK in *.ipk; do
+            [ -f "$IPK" ] || continue
+            
+            echo "Processing: $IPK"
+            
+            if ! tar -xzOf "$IPK" ./control.tar.gz | tar -xzOf - ./control >> Packages; then
+              echo "Error processing $IPK, skipping..."
+              continue
+            fi
+            
+            echo "Filename: $IPK" >> Packages
+            echo "Size: $(stat -c %s "$IPK")" >> Packages
+            echo "MD5Sum: $(md5sum "$IPK" | cut -d' ' -f1)" >> Packages
+            echo "SHA256sum: $(sha256sum "$IPK" | cut -d' ' -f1)" >> Packages
+            echo "" >> Packages
+          done
+          
+          if [ -s Packages ]; then
+            gzip -k -f Packages
+            cp Packages Packages.manifest
+          else
+            echo "No valid packages found!"
+            exit 1
+          fi
+
+      - name: Commit dan Push
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Update package feeds" || echo "No changes to commit"
+          git push origin package 
