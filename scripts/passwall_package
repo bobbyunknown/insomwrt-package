@@ -44,15 +44,17 @@ while IFS= read -r repo || [ -n "$repo" ]; do
     if [ -z "$CURRENT_VERSION" ] || [ "$VERSION" != "$CURRENT_VERSION" ]; then
         echo "Memperbarui PassWall ke versi $VERSION"
         
-        MAIN_IPK=$(echo $LATEST_RELEASE | jq -r '.assets[] | select(.name | contains("luci-24.10_luci-app-passwall_")) | .browser_download_url')
-        if [ ! -z "$MAIN_IPK" ]; then
-            echo "Downloading main IPK from: $MAIN_IPK"
-            wget -q "$MAIN_IPK"
+        LUCI_ASSETS=$(echo $LATEST_RELEASE | jq -r '.assets[] | select(.name | contains("luci-24.10_luci-app-passwall_"))')
+        LUCI_URL=$(echo "$LUCI_ASSETS" | jq -r '.browser_download_url')
+        if [ ! -z "$LUCI_URL" ]; then
+            echo "Downloading LuCI app from: $LUCI_URL"
+            wget -q "$LUCI_URL"
         fi
-    
-        ZIP_URL=$(echo $LATEST_RELEASE | jq -r '.assets[] | select(.name | endswith("aarch64_generic.zip")) | .browser_download_url')
+        
+        ARCH_ASSETS=$(echo $LATEST_RELEASE | jq -r '.assets[] | select(.name | contains("aarch64_generic.zip"))')
+        ZIP_URL=$(echo "$ARCH_ASSETS" | jq -r '.browser_download_url')
         if [ ! -z "$ZIP_URL" ]; then
-            echo "Downloading ZIP from: $ZIP_URL"
+            echo "Downloading aarch64_generic package from: $ZIP_URL"
             wget -q "$ZIP_URL" -O temp.zip
             unzip -j temp.zip "*.ipk"
             rm temp.zip
@@ -64,6 +66,8 @@ while IFS= read -r repo || [ -n "$repo" ]; do
             mv *.ipk "../aarch64_generic/"
             echo "$VERSION" > "../ipk_version/luci-app-passwall_version.txt"
             echo "Berhasil memperbarui PassWall"
+            echo "File yang berhasil ditambahkan:"
+            ls -l "../aarch64_generic/"
         else
             echo "Tidak ada file IPK yang didownload"
         fi
