@@ -11,3 +11,4 @@ peditx/luci-theme-peditx
 animegasan/luci-app-dnsleaktest
 derisamedia/luci-theme-alpha
 rtaserver/RTA-Theme-OpenWrt
+4IceG/luci-app-modemband
