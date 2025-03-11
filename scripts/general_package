@@ -1,0 +1,35 @@
+#!/bin/bash
+
+REPO_FILE="../config.txt"
+TEMP_DIR="temp_packages"
+mkdir -p "$TEMP_DIR"
+cd "$TEMP_DIR"
+
+while IFS= read -r repo || [ -n "$repo" ]; do
+    [[ $repo =~ ^#.*$ || -z $repo ]] && continue
+    
+    REPO_NAME=$(echo "$repo" | cut -d'/' -f2)
+    
+    CURRENT_VERSION=""
+    if [ -f "../aarch64_generic/${REPO_NAME}_version.txt" ]; then
+        CURRENT_VERSION=$(cat "../aarch64_generic/${REPO_NAME}_version.txt")
+    fi
+    
+    LATEST_RELEASE=$(curl -s "https://api.github.com/repos/$repo/releases/latest")
+    VERSION=$(echo $LATEST_RELEASE | jq -r '.tag_name')
+    
+    if [ "$VERSION" != "$CURRENT_VERSION" ]; then
+        echo "Memperbarui $REPO_NAME ke versi $VERSION"
+        
+        echo $LATEST_RELEASE | jq -r '.assets[].browser_download_url' | while read url; do
+            wget -q "$url"
+        done
+        
+        mkdir -p "../aarch64_generic"
+        mv *.ipk "../aarch64_generic/"
+        echo "$VERSION" > "../aarch64_generic/${REPO_NAME}_version.txt"
+    fi
+done < "$REPO_FILE"
+
+cd ..
+rm -rf "$TEMP_DIR"

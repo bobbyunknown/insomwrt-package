@@ -1,0 +1,32 @@
+name: Get ipk
+
+on:
+  schedule:
+    - cron: '0 */12 * * *'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Prepare directory
+        run: |
+          rm -rf aarch64_generic/*
+          mkdir -p aarch64_generic
+          
+      - name: Get package
+        run:
+            chmod +x  bash scripts/passwall_package
+            chmod +x scripts/general_package
+            bash scripts/passwall_package
+            bash scripts/general_package
+        
+      - name: Commit changes
+        run: |
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global user.name "${{ github.actor }}"
+          git add -f aarch64_generic/
+          git commit -m "🤖 Auto Update IPK packages $(date +'%Y-%m-%d')" || echo "No changes to commit"
+          git push
