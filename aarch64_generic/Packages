@@ -778,6 +778,36 @@ Size: 2375
 MD5Sum: d6fdb48e1855de87dec21b5286c4e4a1
 SHA256sum: 484db1ad345743ba512d20535d02145d16335f81096a07ed0c762d98f61898d2
 
+Package: luci-i18n-modemband-pl
+Version: unknown
+Depends: libc, luci-app-modemband
+Source: package/luci-app-modemband
+SourceName: luci-i18n-modemband-pl
+Section: luci
+SourceDateEpoch: 1719054169
+Architecture: all
+Installed-Size: 2466
+Description:  Translation for luci-app-modemband - Polski (Polish)
+Filename: luci-i18n-modemband-pl_unknown_all.ipk
+Size: 3147
+MD5Sum: f7eaf0da2600043dcc95b8805e9a734f
+SHA256sum: 9bf52b97f53299498a542a3076618a6ec8a7d2704259dad7f9ce2258f19b49ef
+
+Package: luci-i18n-modemband-zh-cn
+Version: unknown
+Depends: libc, luci-app-modemband
+Source: package/luci-app-modemband
+SourceName: luci-i18n-modemband-zh-cn
+Section: luci
+SourceDateEpoch: 1719054169
+Architecture: all
+Installed-Size: 2330
+Description:  Translation for luci-app-modemband - 简体中文 (Chinese Simplified)
+Filename: luci-i18n-modemband-zh-cn_unknown_all.ipk
+Size: 3050
+MD5Sum: e323d5a62252b5d8f2181f47769c32b0
+SHA256sum: 0a414bb0404b77b45bfbdff2e8bea48e0d9c1ac667e89ce475f78497eb2b15f5
+
 Package: luci-i18n-ruantiblock-ru
 Version: 1.6.0-r1
 Depends: libc, luci-app-ruantiblock, luci-lua-runtime
