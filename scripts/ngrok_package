@@ -34,7 +34,7 @@ if [ "$VERSION" != "$OLD_VERSION" ]; then
             curl -s -L -H "$AUTH_HEADER" -o "$TARGET_DIR/$(basename $url)" "$url"
         fi
         
-        if [[ $url == *"ngrok-core"* ]] && [[ $url == *"aarch64"* ]]; then
+        if [[ $url == *"ngrok_"* ]] && [[ $url == *"aarch64.ipk"* ]]; then
             echo "Downloading Ngrok core from: $url"
             curl -s -L -H "$AUTH_HEADER" -o "$TARGET_DIR/$(basename $url)" "$url"
         fi
