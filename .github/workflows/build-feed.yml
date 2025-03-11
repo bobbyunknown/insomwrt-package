@@ -5,7 +5,7 @@ name: Build OpenWrt Feed
 on:
   push:
     branches:
-      - main
+      - package
   workflow_dispatch:
 
 jobs:
