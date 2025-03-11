@@ -5,7 +5,7 @@ name: Build OpenWrt Feed
 on:
   push:
     branches:
-      - package
+      - main
   workflow_dispatch:
 
 jobs:
@@ -14,12 +14,13 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: package
       
       - name: Generate Package Index
         run: |
           cd aarch64_generic
           
-          # Hapus file index lama jika ada
           rm -f Packages Packages.gz Packages.manifest
           
           for IPK in *.ipk; do
@@ -27,6 +28,7 @@ jobs:
             
             tar -xzOf "$IPK" ./control.tar.gz | tar -xzOf - ./control >> Packages
             
+            # Tambah informasi file
             echo "Filename: $IPK" >> Packages
             echo "Size: $(stat -c %s $IPK)" >> Packages
             echo "MD5Sum: $(md5sum $IPK | cut -d' ' -f1)" >> Packages
@@ -34,10 +36,8 @@ jobs:
             echo "" >> Packages
           done
           
-          # Buat Packages.gz
           gzip -k -f Packages
           
-          # Buat Packages.manifest
           cp Packages Packages.manifest
 
       - name: Commit dan Push
@@ -46,4 +46,4 @@ jobs:
           git config --global user.email "actions@github.com"
           git add .
           git commit -m "Update package feeds" || echo "No changes to commit"
-          git push 
+          git push origin package 
