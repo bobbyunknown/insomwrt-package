@@ -1,1 +1,1 @@
-alpha-3.9.6-beta-apk_version
+alpha-3.9.7
